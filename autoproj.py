@@ -23,7 +23,9 @@ class FiniteAutomata:
         for symbol in input_str:
             next_states = set()
             for state in current_states:
-                next_states.update(self.transitions.get(state, {}).get(symbol, set()))
+                trans = self.transitions.get(state, {})
+                next_states.update(trans.get('', set()))
+                next_states.update(trans.get(symbol, set()))
             current_states = next_states
         return bool(current_states & self.accepting_states)
 
@@ -56,7 +58,7 @@ class FiniteAutomata:
             
             for  inner_key, inner_value in outer_value.items():
                 # validate the transition-table second-level key
-                if inner_key not in self.alphabet:
+                if inner_key != '' and inner_key not in self.alphabet:
                     print(f"value error: the symbol-key '{inner_key}' must exist in the 'alphabet'.")
                     return False
                 

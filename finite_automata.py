@@ -23,7 +23,9 @@ class FiniteAutomata:
         for symbol in input_str:
             next_states = set()
             for state in current_states:
-                next_states.update(self.transitions.get(state, {}).get(symbol, set()))
+                trans = self.transitions.get(state, {})
+                next_states.update(trans.get('', set()))
+                next_states.update(trans.get(symbol, set()))
             current_states = next_states
         return bool(current_states & self.accepting_states)
 
@@ -56,7 +58,7 @@ class FiniteAutomata:
             
             for  inner_key, inner_value in outer_value.items():
                 # validate the transition-table second-level key
-                if inner_key not in self.alphabet:
+                if inner_key != '' and inner_key not in self.alphabet:
                     print(f"value error: the symbol-key '{inner_key}' must exist in the 'alphabet'.")
                     return False
                 
@@ -88,6 +90,28 @@ class FiniteAutomata:
         print(f"FA is valid.")
         return True
 
+
+    def is_dfa(self):
+        '''
+        Checks if the FA is deterministic (DFA).
+        Returns True if it is, otherwise False.
+        '''
+        for state, transitions_for_state in self.transitions.items():
+
+            for symbol, next_states in transitions_for_state.items():
+
+                if len(next_states) != 1:
+                    return False
+
+        return True
+
+    def is_nfa(self):
+        '''
+        Checks if the FA is non-deterministic (NFA).
+        Returns True if it is, otherwise False.
+        '''
+
+        return not self.is_dfa()
 # first test
 
 input_str = "ab"
@@ -105,4 +129,6 @@ fa = FiniteAutomata(
     starting_state='q0',
     accepting_states={'q2'}
 )
+
 print(f"The FA accepts '{input_str}'? {fa.test(input_str)}")
+print(f"Is the FA an NFA? {fa.is_nfa()}")

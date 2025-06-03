@@ -7,7 +7,9 @@ class FiniteAutomata:
     _starting state q0
     _accepting states f
     '''
-    def __init__(self, all_states, alphabet, transitions, starting_state, accepting_states):
+
+    def __init__(self, id:str, all_states:set[str], alphabet:set[str], transitions, starting_state:str, accepting_states:set[str]):
+        self.id = id
         self.all_states = all_states
         self.alphabet = alphabet
         self.transitions = transitions
@@ -104,31 +106,3 @@ class FiniteAutomata:
                     return False
 
         return True
-
-    def is_nfa(self):
-        '''
-        Checks if the FA is non-deterministic (NFA).
-        Returns True if it is, otherwise False.
-        '''
-
-        return not self.is_dfa()
-# first test
-
-input_str = "ab"
-fa = FiniteAutomata(
-    all_states={'q0', 'q1', 'q2'},
-    alphabet={'a', 'b'},
-    transitions={
-        'q0': {
-            'a': {'q1'}
-        },
-        'q1': {
-            'b': {'q2'}
-        }
-    },
-    starting_state='q0',
-    accepting_states={'q2'}
-)
-
-print(f"The FA accepts '{input_str}'? {fa.test(input_str)}")
-print(f"Is the FA an NFA? {fa.is_nfa()}")

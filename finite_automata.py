@@ -1,6 +1,6 @@
 class FiniteAutomata:
     '''
-    A class for simulating a finite automata. It has components such as:
+    A class for simulating a finite automaton. It has components such as:
     _set of states Q
     _alphabet X
     _transitions d
@@ -8,7 +8,7 @@ class FiniteAutomata:
     _accepting states f
     '''
 
-    def __init__(self, id:str, all_states:set[str], alphabet:set[str], transitions, starting_state:str, accepting_states:set[str]):
+    def __init__(self, id:str, all_states:set[str], alphabet:set[str], transitions:dict[str, dict[str, set[str]]], starting_state:str, accepting_states:set[str]):
         self.id = id
         self.all_states = all_states
         self.alphabet = alphabet
@@ -16,22 +16,23 @@ class FiniteAutomata:
         self.starting_state = starting_state
         self.accepting_states = accepting_states
         
-    def test(self, input_str):
+    def test(self, input_str: str) -> bool:
         '''for the given fa components, validate the given input string'''
         if not self.is_valid(input_str):
             print(f"argument error: the given arguments do not match the standard fa components.")
             return False
         current_states = {self.starting_state}
+        if input_str == '':
+            return bool(self.eclose(current_states) & self.accepting_states)
         for symbol in input_str:
             next_states = set()
             for state in current_states:
                 trans = self.transitions.get(state, {})
-                next_states.update(trans.get('', set()))
                 next_states.update(trans.get(symbol, set()))
-            current_states = next_states
+            current_states = self.eclose(next_states)
         return bool(current_states & self.accepting_states)
 
-    def is_valid(self, input_str):
+    def is_valid(self, input_str: str) -> bool:
         '''
         Validates that all given components match the structure of a finite automaton (FA).
         Checks types and values of transition key-value pairs, starting state, and accepting states.
@@ -102,7 +103,7 @@ class FiniteAutomata:
         '''
         pass
 
-    def eclose(self, subset: set) -> set:
+    def eclose(self, subset: set[str]) -> set[str]:
         prev = set()
         curr = subset
 
@@ -113,7 +114,7 @@ class FiniteAutomata:
 
         return curr
 
-    def is_dfa(self):
+    def is_dfa(self) -> bool:
         '''
         Checks if the FA is deterministic (DFA).
         Returns True if it is, otherwise False.

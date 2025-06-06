@@ -18,7 +18,7 @@ class FiniteAutomata:
         
     def test(self, input_str):
         '''for the given fa components, validate the given input string'''
-        if not self.validate_FA(input_str):
+        if not self.is_valid(input_str):
             print(f"argument error: the given arguments do not match the standard fa components.")
             return False
         current_states = {self.starting_state}
@@ -31,8 +31,7 @@ class FiniteAutomata:
             current_states = next_states
         return bool(current_states & self.accepting_states)
 
-
-    def validate_FA(self, input_str):
+    def is_valid(self, input_str):
         '''
         Validates that all given components match the structure of a finite automaton (FA).
         Checks types and values of transition key-value pairs, starting state, and accepting states.
@@ -92,6 +91,27 @@ class FiniteAutomata:
         print(f"FA is valid.")
         return True
 
+    def construct_subset(self):
+        '''
+        WARNING: use only during NFA conversion, no manual uses unless you understood.
+        It simulate the two-step transitions of the NFA conversion, where you:
+        1. get all state transitions from the subset, returns subset A
+        2. get all e-transition from subset A, returns subset B
+        Unlike, the starting state where we only get all e-transitions of q0,
+        but we do make q0' go through the 2-step transitions.
+        '''
+        pass
+
+    def eclose(self, subset: set) -> set:
+        prev = set()
+        curr = subset
+
+        while prev != curr:
+            prev = curr
+            for state in prev:
+                curr.update(self.transitions.get(state, {}).get('', set()))
+
+        return curr
 
     def is_dfa(self):
         '''
@@ -106,3 +126,4 @@ class FiniteAutomata:
                     return False
 
         return True
+    

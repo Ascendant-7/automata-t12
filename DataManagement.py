@@ -33,6 +33,7 @@ def load_fa_from_file(filename: str) -> FiniteAutomata:
     accepting_states = set(data['accepting_states'])
 
     fa = FiniteAutomata(
+        id='',
         all_states=all_states,
         alphabet=alphabet,
         transitions=transitions,

@@ -30,6 +30,21 @@ dfa2 = FiniteAutomata(
     accepting_states={'q0'}
 )
 
+dfa3 = FiniteAutomata(
+    name="^(1|01)[01]*$",
+    all_states={'q0', 'q1', 'q2', 'q3'},
+    alphabet={'0', '1'},
+    transitions={
+        'q0': {'0': {'q1'}, '1': {'q2'}},
+        'q1': {'0': {'q0'}, '1': {'q3'}},
+        'q2': {'0': {'q2'}, '1': {'q2'}},
+        'q3': {'0': {'q3'}, '1': {'q3'}}
+    },
+    starting_state='q0',
+    accepting_states={'q2', 'q3'}
+)
+
+
 nfa1 = FiniteAutomata(
     name="^a+b$",
     all_states={'q0', 'q1', 'q2'},
@@ -80,6 +95,11 @@ regex_accepted = bool(re.match(pattern, test_str))
 print(f"is '{test_str}' accepted by '{test_fa.name}'? {regex_accepted}")
 
 print(f'\nThe tests return {all([fa_accepted, converted_fa_accepted, regex_accepted])}')
+
+print()
+dfa3.desc()
+print("minimizing...")
+dfa3.get_minimized().desc()
 
 save_fas(fa_list, "data.json")
 new_list = load_fas("data.json")

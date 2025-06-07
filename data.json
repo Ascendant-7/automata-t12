@@ -1,0 +1,123 @@
+[
+    {
+        "all_states": [
+            "q0",
+            "q2",
+            "q1"
+        ],
+        "alphabet": [
+            "a",
+            "b"
+        ],
+        "transitions": {
+            "q0": {
+                "a": [
+                    "q1"
+                ]
+            },
+            "q1": {
+                "b": [
+                    "q2"
+                ]
+            },
+            "q2": {}
+        },
+        "starting_state": "q0",
+        "accepting_states": [
+            "q2"
+        ],
+        "name": "dfa >> ^ab$"
+    },
+    {
+        "all_states": [
+            "q0",
+            "q1"
+        ],
+        "alphabet": [
+            "1",
+            "0"
+        ],
+        "transitions": {
+            "q0": {
+                "0": [
+                    "q0"
+                ],
+                "1": [
+                    "q1"
+                ]
+            },
+            "q1": {
+                "0": [
+                    "q0"
+                ],
+                "1": [
+                    "q1"
+                ]
+            }
+        },
+        "starting_state": "q0",
+        "accepting_states": [
+            "q0"
+        ],
+        "name": "dfa >> 0$"
+    },
+    {
+        "all_states": [
+            "q0",
+            "q2",
+            "q1"
+        ],
+        "alphabet": [
+            "a",
+            "b"
+        ],
+        "transitions": {
+            "q0": {
+                "a": [
+                    "q0",
+                    "q1"
+                ]
+            },
+            "q1": {
+                "b": [
+                    "q2"
+                ]
+            }
+        },
+        "starting_state": "q0",
+        "accepting_states": [
+            "q2"
+        ],
+        "name": "nfa >> ^a+b$"
+    },
+    {
+        "all_states": [
+            "q0",
+            "q2",
+            "q1"
+        ],
+        "alphabet": [
+            "a",
+            "b"
+        ],
+        "transitions": {
+            "q0": {
+                "a": [
+                    "q0",
+                    "q1"
+                ]
+            },
+            "q1": {
+                "b": [
+                    "q2"
+                ]
+            }
+        },
+        "starting_state": "q0",
+        "accepting_states": [
+            "q0",
+            "q2"
+        ],
+        "name": "nfa >> ^a*b?$"
+    }
+]

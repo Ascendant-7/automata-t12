@@ -1,13 +1,13 @@
 [
     {
         "all_states": [
-            "q1",
             "q2",
-            "q0"
+            "q0",
+            "q1"
         ],
         "alphabet": [
-            "b",
-            "a"
+            "a",
+            "b"
         ],
         "transitions": {
             "q0": {
@@ -30,8 +30,8 @@
     },
     {
         "all_states": [
-            "q1",
-            "q0"
+            "q0",
+            "q1"
         ],
         "alphabet": [
             "0",
@@ -63,19 +63,52 @@
     },
     {
         "all_states": [
-            "q1",
-            "q2",
-            "q0"
+            "q0",
+            "q1"
         ],
         "alphabet": [
-            "b",
-            "a"
+            "0",
+            "1"
+        ],
+        "transitions": {
+            "q0": {
+                "0": [
+                    "q0"
+                ],
+                "1": [
+                    "q0"
+                ]
+            },
+            "q1": {
+                "0": [
+                    "q1"
+                ],
+                "1": [
+                    "q0"
+                ]
+            }
+        },
+        "starting_state": "q1",
+        "accepting_states": [
+            "q0"
+        ],
+        "name": "dfa minimized >> ^(1|01)[01]*$"
+    },
+    {
+        "all_states": [
+            "q2",
+            "q0",
+            "q1"
+        ],
+        "alphabet": [
+            "a",
+            "b"
         ],
         "transitions": {
             "q0": {
                 "a": [
-                    "q1",
-                    "q0"
+                    "q0",
+                    "q1"
                 ]
             },
             "q1": {
@@ -92,19 +125,19 @@
     },
     {
         "all_states": [
-            "q1",
             "q2",
-            "q0"
+            "q0",
+            "q1"
         ],
         "alphabet": [
-            "b",
-            "a"
+            "a",
+            "b"
         ],
         "transitions": {
             "q0": {
                 "a": [
-                    "q1",
-                    "q0"
+                    "q0",
+                    "q1"
                 ]
             },
             "q1": {

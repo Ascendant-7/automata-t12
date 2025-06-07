@@ -2,22 +2,9 @@ import copy
 import json
 from finite_automata import FiniteAutomata
 
-# Helper to convert sets inside __dict__ to lists for JSON
-def normalize_fas(fa: FiniteAutomata) -> dict:
-    fa_dict = copy.deepcopy(fa.__dict__)
-    fa_dict['all_states'] = list(fa_dict['all_states'])
-    fa_dict['alphabet'] = list(fa_dict['alphabet'])
-    fa_dict['accepting_states'] = list(fa_dict['accepting_states'])
-    # Convert transition sets to lists
-    fa_dict['transitions'] = {
-        state: {symbol: list(next_states) for symbol, next_states in trans.items()}
-        for state, trans in fa_dict['transitions'].items()
-    }
-    return fa_dict
-
 # Save multiple FAs
 def save_fas(fa_list: list[FiniteAutomata], filename: str):
-    data = [normalize_fas(fa) for fa in fa_list]
+    data = [fa.get_normalized() for fa in fa_list]
     with open(filename, 'w') as f:
         json.dump(data, f, indent=4)
     print(f"{len(fa_list)} FAs saved to '{filename}'.")

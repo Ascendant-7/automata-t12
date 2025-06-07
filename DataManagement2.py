@@ -1,7 +1,7 @@
 import json
 from finite_automata import FiniteAutomata
 
-# Add to_dict method
+# Add these methods to your FiniteAutomata class
 def to_dict(self):
     return {
         'id': self.id,
@@ -15,11 +15,10 @@ def to_dict(self):
         'accepting_states': list(self.accepting_states)
     }
 
-# Add from_dict method
 @staticmethod
 def from_dict(data):
     return FiniteAutomata(
-        id=data.get('id', ''),
+        id=data['id'],
         all_states=set(data['all_states']),
         alphabet=set(data['alphabet']),
         transitions={
@@ -30,29 +29,9 @@ def from_dict(data):
         accepting_states=set(data['accepting_states'])
     )
 
-# Add epsilon_closure method
-def epsilon_closure(self, state):
-    """
-    Compute ε-closure of a given state in the automaton.
-    Assumes ε-transitions are represented by the empty string ''.
-    """
-    closure = {state}
-    stack = [state]
-
-    while stack:
-        current = stack.pop()
-        epsilon_transitions = self.transitions.get(current, {}).get('', set())
-        for next_state in epsilon_transitions:
-            if next_state not in closure:
-                closure.add(next_state)
-                stack.append(next_state)
-
-    return closure
-
-# Attach methods to FiniteAutomata class
+# Attach methods to class if not already inside
 FiniteAutomata.to_dict = to_dict
 FiniteAutomata.from_dict = from_dict
-FiniteAutomata.epsilon_closure = epsilon_closure
 
 # Save multiple FAs
 def save_all_fas_to_file(fa_list, filename):

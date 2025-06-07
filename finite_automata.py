@@ -1,3 +1,4 @@
+import copy
 from queue import Queue
 import re
 
@@ -17,7 +18,7 @@ class FiniteAutomata:
         self.transitions = transitions
         self.starting_state = starting_state
         self.accepting_states = accepting_states
-        if re.match("^(dfa|nfa) >>", name):
+        if re.match("^(dfa|nfa)", name):
             self.name = name
         else:
             self.name = f"dfa >> {name}" if self.is_dfa() else f"nfa >> {name}"
@@ -287,19 +288,32 @@ class FiniteAutomata:
                             break
 
         try:
-            _, regex = self.name.split(' >> ', 1)
+            _, fa_regex = self.name.split(' >> ', 1)
         except ValueError as e:
-            print(f'Error: {e}')
-            regex = self.name
+            print(f"Error: {e}")
+            fa_regex = self.name
         
         if new_start_state == '__INVALID__':
             raise ValueError("Starting state was removed or not found in any partition.")
         
         return FiniteAutomata(
-            name=f"dfa minimized >> {regex}",
+            name=f"dfa minimized >> {fa_regex}",
             all_states=new_states,
             alphabet=self.alphabet,
             transitions=new_transitions,
             starting_state=new_start_state,
             accepting_states=new_accepting_states
         )
+    
+    # Helper to convert sets inside __dict__ to lists for JSON
+    def get_normalized(self) -> dict:
+        fa_dict = copy.deepcopy(self.__dict__)
+        fa_dict['all_states'] = list(fa_dict['all_states'])
+        fa_dict['alphabet'] = list(fa_dict['alphabet'])
+        fa_dict['accepting_states'] = list(fa_dict['accepting_states'])
+        # Convert transition sets to lists
+        fa_dict['transitions'] = {
+            state: {symbol: list(next_states) for symbol, next_states in trans.items()}
+            for state, trans in fa_dict['transitions'].items()
+        }
+        return fa_dict

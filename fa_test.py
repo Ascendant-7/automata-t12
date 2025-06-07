@@ -69,8 +69,6 @@ nfa2 = FiniteAutomata(
     accepting_states={'q0', 'q2'}
 )
 
-fa_list = [dfa1, dfa2, nfa1, nfa2]
-
 test_str = "ab"
 test_fa = nfa1
 
@@ -99,14 +97,17 @@ print(f'\nThe tests return {all([fa_accepted, converted_fa_accepted, regex_accep
 print()
 dfa3.desc()
 print("minimizing...")
-dfa3.get_minimized().desc()
+dfa3 = dfa3.get_minimized()
+dfa3.desc()
+
+fa_list = [dfa1, dfa2, dfa3, nfa1, nfa2]
 
 save_fas(fa_list, "data.json")
 new_list = load_fas("data.json")
 
 correct_save_load_count = 0
 for i in range(len(fa_list)):
-    if normalize_fas(fa_list[i]) == normalize_fas(new_list[i]):
+    if fa_list[i].get_normalized() == new_list[i].get_normalized():
         correct_save_load_count += 1
 
 print(f"correct save/load count: {correct_save_load_count}")

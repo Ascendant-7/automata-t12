@@ -114,17 +114,87 @@ class FiniteAutomata:
 
         return curr
 
-    def is_dfa(self) -> bool:
-        '''
-        Checks if the FA is deterministic (DFA).
-        Returns True if it is, otherwise False.
-        '''
-        for state, transitions_for_state in self.transitions.items():
+ def to_dfa(self):
+        """Convert ε-NFA to DFA using subset construction"""
+        dfa_states = {}
+        dfa_transitions = {}
+        queue = deque()
 
-            for symbol, next_states in transitions_for_state.items():
+        # Start state is ε-closure of the NFA start state
+        start_closure = frozenset(self.epsilon_closure({self.start_state}))
+        dfa_states[start_closure] = 'A'  # Assign names like A, B, C, ...
+        queue.append(start_closure)
+        state_names = ['A']
+        name_index = 1
 
-                if len(next_states) != 1:
-                    return False
+        while queue:
+            current = queue.popleft()
+            current_name = dfa_states[current]
+            dfa_transitions[current_name] = {}
 
-        return True
+            for symbol in self.alphabet - {'ε'}:
+                next_states = set()
+                for nfa_state in current:
+                    next_states |= self.transitions[nfa_state].get(symbol, set())
+                closure = self.epsilon_closure(next_states)
+                closure_frozen = frozenset(closure)
+
+                if not closure:
+                    continue
+
+                if closure_frozen not in dfa_states:
+                    name = chr(ord('A') + name_index)
+                    name_index += 1
+                    dfa_states[closure_frozen] = name
+                    queue.append(closure_frozen)
+                else:
+                    name = dfa_states[closure_frozen]
+
+                dfa_transitions[current_name][symbol] = name
+
+        # Determine accept states
+        dfa_accept_states = set()
+        for state_set, name in dfa_states.items():
+            if self.accept_states & state_set:
+                dfa_accept_states.add(name)
+
+        return DFA(set(dfa_states.values()), self.alphabet - {'ε'}, dfa_transitions, 'A', dfa_accept_states)
+
+class DFA:
+    def __init__(self, states, alphabet, transitions, start_state, accept_states):
+        self.states = states
+        self.alphabet = alphabet
+        self.transitions = transitions
+        self.start_state = start_state
+        self.accept_states = accept_states
+
+    def print_dfa(self):
+        print("States:", self.states)
+        print("Alphabet:", self.alphabet)
+        print("Start State:", self.start_state)
+        print("Accept States:", self.accept_states)
+        print("Transitions:")
+        for state in self.states:
+            for symbol in self.alphabet:
+                dest = self.transitions.get(state, {}).get(symbol, None)
+                if dest:
+                    print(f"  delta({state}, {symbol}) -> {dest}")
+
+states = {'q0', 'q1', 'q2'}
+alphabet = {'a', 'b', 'ε'}
+transitions = [
+    ('q0', 'ε', 'q1'),
+    ('q0', 'ε', 'q2'),
+    ('q1', 'a', 'q1'),
+    ('q1', 'b', 'q1'),
+    ('q2', 'a', 'q2'),
+    ('q2', 'b', 'q2')
+]
+start_state = 'q0'
+accept_states = {'q1'}
+
+enfa = def __init__(self, states, alphabet, transitions, start_state, accept_states)
+dfa = enfa.to_dfa()
+dfa.print_dfa()
+
     

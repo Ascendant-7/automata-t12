@@ -1,3 +1,6 @@
+from queue import Queue
+import re
+
 class FiniteAutomata:
     '''
     A class for simulating a finite automaton. It has components such as:
@@ -8,14 +11,25 @@ class FiniteAutomata:
     _accepting states f
     '''
 
-    def __init__(self, id:str, all_states:set[str], alphabet:set[str], transitions:dict[str, dict[str, set[str]]], starting_state:str, accepting_states:set[str]):
-        self.id = id
+    def __init__(self, name:str, all_states:set[str], alphabet:set[str], transitions:dict[str, dict[str, set[str]]], starting_state:str, accepting_states:set[str]):
         self.all_states = all_states
         self.alphabet = alphabet
         self.transitions = transitions
         self.starting_state = starting_state
         self.accepting_states = accepting_states
+        if re.match("^(dfa|nfa) >>", name):
+            self.name = name
+        else:
+            self.name = f"dfa >> {name}" if self.is_dfa() else f"nfa >> {name}"
         
+    def __eq__(self, other):
+        if not isinstance(other, FiniteAutomata):
+            return NotImplemented
+        return self.name == other.name
+    
+    def __hash__(self):
+        return hash(self.name)
+    
     def test(self, input_str: str) -> bool:
         '''for the given fa components, validate the given input string'''
         if not self.is_valid(input_str):
@@ -31,6 +45,9 @@ class FiniteAutomata:
                 next_states.update(trans.get(symbol, set()))
             current_states = self.eclose(next_states)
         return bool(current_states & self.accepting_states)
+    
+    def desc(self):
+        print(self.__dict__)
 
     def is_valid(self, input_str: str) -> bool:
         '''
@@ -89,7 +106,6 @@ class FiniteAutomata:
             if symbol not in self.alphabet:
                 print(f"the symbol {symbol} in the input string must exist in the 'alphabet'.")
 
-        print(f"FA is valid.")
         return True
 
     def construct_subset(self):
@@ -108,7 +124,7 @@ class FiniteAutomata:
         curr = subset
 
         while prev != curr:
-            prev = curr
+            prev = curr.copy()
             for state in prev:
                 curr.update(self.transitions.get(state, {}).get('', set()))
 
@@ -127,86 +143,58 @@ class FiniteAutomata:
                     return False
 
         return True
- 
-def to_dfa(self):
+
+    def to_dfa(self) -> "FiniteAutomata":
         """Convert ε-NFA to DFA using subset construction"""
-        dfa_states = {}
-        dfa_transitions = {}
-        queue = deque()
+        dfa_states = {} # holds all the new dfa states as keys and their nfa composite states as values
+        dfa_transitions = {} # hold all the new dfa transitions using the new dfa states
+        queue = Queue() # tracks non-constructed composite states (comp_state that doesn't have a dfa state to represent it)
 
         # Start state is ε-closure of the NFA start state
-        start_closure = frozenset(self.epsilon_closure({self.start_state}))
-        dfa_states[start_closure] = 'A'  # Assign names like A, B, C, ...
-        queue.append(start_closure)
-        state_names = ['A']
-        name_index = 1
+        start_comp_state = frozenset(self.eclose({self.starting_state})) # composite of NFA states = dfa state
+        dfa_states[start_comp_state] = 'q0'  # Assign names like A, B, C, ...
+        queue.put(start_comp_state)
 
-        while queue:
-            current = queue.popleft()
-            current_name = dfa_states[current]
-            dfa_transitions[current_name] = {}
+        while not queue.empty():
+            current_comp_state = queue.get()
+            current_dfa_state = dfa_states[current_comp_state]
+            dfa_transitions[current_dfa_state] = {}
 
-            for symbol in self.alphabet - {'ε'}:
-                next_states = set()
-                for nfa_state in current:
-                    next_states |= self.transitions[nfa_state].get(symbol, set())
-                closure = self.epsilon_closure(next_states)
-                closure_frozen = frozenset(closure)
+            for symbol in self.alphabet:
+                next_comp_states = set()
+                for nfa_state in current_comp_state:
+                    next_comp_states |= self.transitions.get(nfa_state, {}).get(symbol, set())
+                next_comp_states = self.eclose(next_comp_states)
+                next_comp_states = frozenset(next_comp_states)
 
-                if not closure:
+                if not next_comp_states:
                     continue
 
-                if closure_frozen not in dfa_states:
-                    name = chr(ord('A') + name_index)
-                    name_index += 1
-                    dfa_states[closure_frozen] = name
-                    queue.append(closure_frozen)
+                if next_comp_states not in dfa_states:
+                    state = f"q{len(dfa_states)}"
+                    dfa_states[next_comp_states] = state
+                    queue.put(next_comp_states)
                 else:
-                    name = dfa_states[closure_frozen]
+                    state = dfa_states[next_comp_states]
 
-                dfa_transitions[current_name][symbol] = name
-
+                dfa_transitions[current_dfa_state][symbol] = {state}
+        
         # Determine accept states
-        dfa_accept_states = set()
-        for state_set, name in dfa_states.items():
-            if self.accept_states & state_set:
-                dfa_accept_states.add(name)
+        dfa_accepting_states = set()
+        for comp_state, dfa_state in dfa_states.items():
+            if self.accepting_states & comp_state:
+                dfa_accepting_states.add(dfa_state)
 
-        return DFA(set(dfa_states.values()), self.alphabet - {'ε'}, dfa_transitions, 'A', dfa_accept_states)
-
-
-class DFA:
-    def __init__(self, states, alphabet, transitions, start_state, accept_states):
-        self.states = states
-        self.alphabet = alphabet
-        self.transitions = transitions
-        self.start_state = start_state
-        self.accept_states = accept_states
-
-    def print_dfa(self):
-        print("States:", self.states)
-        print("Alphabet:", self.alphabet)
-        print("Start State:", self.start_state)
-        print("Accept States:", self.accept_states)
-        print("Transitions:")
-        for state in self.states:
-            for symbol in self.alphabet:
-                dest = self.transitions.get(state, {}).get(symbol, None)
-                if dest:
-                    print(f"  delta({state}, {symbol}) -> {dest}")
-states = {'q0', 'q1', 'q2'}
-alphabet = {'a', 'b', 'ε'}
-transitions = [
-    ('q0', 'ε', 'q1'),
-    ('q0', 'ε', 'q2'),
-    ('q1', 'a', 'q1'),
-    ('q1', 'b', 'q1'),
-    ('q2', 'a', 'q2'),
-    ('q2', 'b', 'q2')
-]
-start_state = 'q0'
-accept_states = {'q1'}
-
-enfa = def __init__(self, states, alphabet, transitions, start_state, accept_states)
-dfa = enfa.to_dfa()
-dfa.print_dfa()
+        try:
+            _, fa_regex = self.name.split(' >> ', 1)
+        except ValueError as e:
+            print(f"Error: {e}")
+            fa_regex = self.name
+        return FiniteAutomata(
+            f"{fa_regex}",
+            set(dfa_states.values()), 
+            self.alphabet, 
+            dfa_transitions, 
+            'q0', 
+            dfa_accepting_states
+            )

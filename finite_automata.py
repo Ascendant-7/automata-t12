@@ -198,3 +198,108 @@ class FiniteAutomata:
             'q0', 
             dfa_accepting_states
             )
+    
+    def get_minimized(self) -> "FiniteAutomata":
+        if not self.is_dfa():
+            raise ValueError("Only DFAs can be minimized.")
+
+        # Step 1: Remove all non-reachable states
+        reachable = {self.starting_state}
+        queue = [self.starting_state]
+
+        # queue for tracking traversal
+        while queue:
+            state = queue.pop()
+            for next_states in self.transitions.get(state, {}).values():
+                for ns in next_states:
+                    if ns not in reachable:
+                        reachable.add(ns)
+                        queue.append(ns)
+
+        # Filter states
+        self.all_states = reachable
+        self.accepting_states = self.accepting_states.intersection(reachable)
+
+        # Remove unreachable states from transitions keys and next states
+        self.transitions = {
+            state: {
+                symbol: next_states.intersection(reachable)
+                for symbol, next_states in symbol_dict.items()
+            }
+            for state, symbol_dict in self.transitions.items() if state in reachable
+        }
+
+        # Step 2: Initialize partitions: accepting vs non-accepting states
+        non_accepting_states = self.all_states - self.accepting_states
+        partitions = [self.accepting_states, non_accepting_states]
+
+        def get_partition_index(state: str|None, partitions: list[set[str]]):
+            if state is None:
+                return -1
+            for idx, group in enumerate(partitions):
+                if state in group:
+                    return idx
+            return -1
+
+        # Step 3: Refine partitions
+        while True:
+            new_partitions = []
+            for group in partitions:
+                # Split group by transitions
+                split_map = {}
+                for state in group:
+                    key = tuple(
+                        get_partition_index(
+                            next(iter(self.transitions.get(state, {}).get(symbol, set())), None),
+                            partitions
+                        ) for symbol in self.alphabet
+                    )
+                    split_map.setdefault(key, set()).add(state)
+                new_partitions.extend(split_map.values())
+            if new_partitions == partitions:
+                break
+            partitions = new_partitions
+
+        # Step 4: Create minimized DFA
+        state_mapping = {frozenset(group): f'q{idx}' for idx, group in enumerate(partitions)}
+        new_states = set(state_mapping.values())
+        new_transitions = {}
+        new_accepting_states = set()
+        new_start_state = '__INVALID__'
+
+        for group in partitions:
+            rep_state = next(iter(group))  # Representative state
+            new_state_name = state_mapping[frozenset(group)]
+            new_transitions[new_state_name] = {}
+
+            if rep_state in self.accepting_states:
+                new_accepting_states.add(new_state_name)
+            if self.starting_state in group:
+                new_start_state = new_state_name
+
+            for symbol in self.alphabet:
+                target_states = self.transitions.get(rep_state, {}).get(symbol)
+                if target_states:
+                    target_state = next(iter(target_states))
+                    for part in partitions:
+                        if target_state in part:
+                            new_transitions[new_state_name][symbol] = {state_mapping[frozenset(part)]}
+                            break
+
+        try:
+            _, regex = self.name.split(' >> ', 1)
+        except ValueError as e:
+            print(f'Error: {e}')
+            regex = self.name
+        
+        if new_start_state == '__INVALID__':
+            raise ValueError("Starting state was removed or not found in any partition.")
+        
+        return FiniteAutomata(
+            name=f"dfa minimized >> {regex}",
+            all_states=new_states,
+            alphabet=self.alphabet,
+            transitions=new_transitions,
+            starting_state=new_start_state,
+            accepting_states=new_accepting_states
+        )

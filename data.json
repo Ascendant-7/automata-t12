@@ -1,8 +1,8 @@
 [
     {
         "all_states": [
-            "q2",
             "q1",
+            "q2",
             "q0"
         ],
         "alphabet": [
@@ -34,8 +34,8 @@
             "q0"
         ],
         "alphabet": [
-            "1",
-            "0"
+            "0",
+            "1"
         ],
         "transitions": {
             "q0": {
@@ -63,8 +63,8 @@
     },
     {
         "all_states": [
-            "q2",
             "q1",
+            "q2",
             "q0"
         ],
         "alphabet": [
@@ -92,8 +92,8 @@
     },
     {
         "all_states": [
-            "q2",
             "q1",
+            "q2",
             "q0"
         ],
         "alphabet": [

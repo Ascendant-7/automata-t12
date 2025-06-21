@@ -1,4 +1,3 @@
-import copy
 from queue import Queue
 import re
 
@@ -109,17 +108,6 @@ class FiniteAutomata:
 
         return True
 
-    def construct_subset(self):
-        '''
-        WARNING: use only during NFA conversion, no manual uses unless you understood.
-        It simulate the two-step transitions of the NFA conversion, where you:
-        1. get all state transitions from the subset, returns subset A
-        2. get all e-transition from subset A, returns subset B
-        Unlike, the starting state where we only get all e-transitions of q0,
-        but we do make q0' go through the 2-step transitions.
-        '''
-        pass
-
     def eclose(self, subset: set[str]) -> set[str]:
         prev = set()
         curr = subset
@@ -153,7 +141,7 @@ class FiniteAutomata:
 
         # Start state is ε-closure of the NFA start state
         start_comp_state = frozenset(self.eclose({self.starting_state})) # composite of NFA states = dfa state
-        dfa_states[start_comp_state] = 'q0'  # Assign names like A, B, C, ...
+        dfa_states[start_comp_state] = 'q0'
         queue.put(start_comp_state)
 
         while not queue.empty():
@@ -305,15 +293,14 @@ class FiniteAutomata:
             accepting_states=new_accepting_states
         )
     
-    # Helper to convert sets inside __dict__ to lists for JSON
     def get_normalized(self) -> dict:
-        fa_dict = copy.deepcopy(self.__dict__)
-        fa_dict['all_states'] = list(fa_dict['all_states'])
-        fa_dict['alphabet'] = list(fa_dict['alphabet'])
-        fa_dict['accepting_states'] = list(fa_dict['accepting_states'])
-        # Convert transition sets to lists
-        fa_dict['transitions'] = {
-            state: {symbol: list(next_states) for symbol, next_states in trans.items()}
-            for state, trans in fa_dict['transitions'].items()
+        return {
+            'all_states': list(self.all_states),
+            'alphabet': list(self.alphabet),
+            'accepting_states': list(self.accepting_states),
+            'starting_state': self.starting_state,
+            'transitions': {
+                state: {symbol: list(next_states) for symbol, next_states in trans.items()}
+                for state, trans in self.transitions.items()
+            }
         }
-        return fa_dict

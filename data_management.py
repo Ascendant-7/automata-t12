@@ -1,4 +1,3 @@
-import copy
 import json
 from finite_automata import FiniteAutomata
 
@@ -11,8 +10,15 @@ def save_fas(fa_list: list[FiniteAutomata], filename: str):
 
 # Load multiple FAs
 def load_fas(filename: str) -> list[FiniteAutomata]:
-    with open(filename, 'r') as f:
-        data = json.load(f)
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"File '{filename}' not found.")
+        return []
+    except json.JSONDecodeError:
+        print(f"File '{filename}' is not valid JSON.")
+        return []
     fa_list = [FiniteAutomata(
         name=fa_data['name'],
         all_states=set(fa_data['all_states']),
